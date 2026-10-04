@@ -28,7 +28,7 @@ select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1
 .add{width:100%;margin-top:4px}
 #ms{display:none;position:fixed;inset:0;z-index:10;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;user-select:none;touch-action:manipulation}
 #ms.ready{background:#2e7d5b}#ms.run{background:#c0392b}#ms.done{background:#4a5560}
-#mback{position:absolute;top:calc(10px + env(safe-area-inset-top,0));left:10px}
+#mback{position:absolute;top:0;left:0;right:0;border:none;border-radius:0;background:rgba(0,0,0,.2);color:#fff;padding:calc(34px + env(safe-area-inset-top,0)) 20px 34px;font-size:14px}
 #mn{font-size:22px;padding:0 16px}#mt{font-size:min(20vw,96px);font-weight:700;font-variant-numeric:tabular-nums;margin:12px 0}#mh{font-size:15px;opacity:.9}
 #ms .wk{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:12px;padding:34px 20px calc(34px + env(safe-area-inset-bottom,0));background:rgba(0,0,0,.2);font-size:14px;text-align:left;line-height:1.6}#wkcb{width:22px;height:22px;flex:none}
 #rs{display:none;position:fixed;inset:0;background:#fff;z-index:9;padding:calc(12px + env(safe-area-inset-top,0)) 16px 12px;flex-direction:column}
@@ -36,6 +36,9 @@ select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1
 .rr{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #e3e8ee;padding:.35em 0}.rr span:last-child{text-align:right}
 .br{color:#2e7d5b}.rr.tot{font-weight:700;border-bottom:none}.rr button{padding:2px 9px}
 .ins{text-align:center;padding:2px}.ins button{font-size:12px;padding:3px 10px}.lg{width:100%;margin-bottom:8px;text-align:left}
+#rbtn .blink{background:#e08a00;color:#fff;animation:blk .8s ease-in-out infinite alternate}@keyframes blk{from{opacity:1}to{opacity:.55}}
+.bi{width:4.2em;padding:2px 4px;font:inherit;text-align:center;border:1px solid #c9d1da;border-radius:8px}
+.cmp{width:100%;border-collapse:collapse;font-size:14px}.cmp td,.cmp th{border:1px solid #e3e8ee;padding:6px 8px;text-align:left}.cmp .df{background:#fff3cd}
 #rbtn{display:flex;gap:8px;padding-top:10px}#rbtn button{flex:1;padding:10px 4px}
 </style></head><body>
 <div id="hd"><h1>NamaStopwatch <span class="nm">なます</span></h1><button class="o" id="sumbtn">集計</button></div>
@@ -53,7 +56,7 @@ select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1
  <label class="wk"><input type="checkbox" id="wkcb"><span id="wkt"></span></label></div>
 <div id="rs"><div id="rb"></div><div id="rbtn"></div></div>
 <script>
-var APP_BUILD='20261004-4',KEY='namastopwatch_v1';
+var APP_BUILD='20261004-5',KEY='namastopwatch_v1';
 if(/embedded=1/.test(location.search))document.body.classList.add('emb');
 function uid(){return Math.random().toString(36).slice(2,9)}
 function mkList(n){return{id:uid(),name:n,songs:[],brk:[]}}
@@ -121,40 +124,51 @@ document.addEventListener('click',function(e){
   else if(a==='dt')confirmDel('t'+b.dataset.t,function(){s.takes=s.takes.filter(function(x){return x.id!==b.dataset.t});if(!s.takes.length)s.takes.push(mkTake())});
 });
 function adopted(s,n){var ts=s.takes.filter(function(t){return ms(t,n)>0});return ts.length?(ts.filter(function(t){return t.id===s.use})[0]||ts[ts.length-1]):null}
-function brkAt(L,id){return L.brk.filter(function(b){var ok=L.songs.some(function(s){return s.id===b.after});return(ok?b.after:'')===id})}
-function sumData(L,n){var it=[],tot=0,first=0;
-  function tail(id){brkAt(L,id).forEach(function(b){tot+=b.min*60000;it.push({t:'b',b:b})});it.push({t:'i',id:id})}
+function same(a,b){var f=function(x){return JSON.stringify(x.map(function(y){return[y.after,y.min]}))};return f(a)===f(b)}
+function bdesc(L,B){var o=[];[''].concat(L.songs.map(function(s){return s.id})).forEach(function(id){brkAt(L,id,B).forEach(function(b){var s=L.songs.filter(function(x){return x.id===id})[0];o.push((s?s.name+' の後':'先頭')+'　'+b.min+'分')})});return o}
+function brkAt(L,id,B){return (B||L.brk).filter(function(b){var ok=L.songs.some(function(s){return s.id===b.after});return(ok?b.after:'')===id})}
+function sumData(L,n,B){var it=[],tot=0,first=0;
+  function tail(id){brkAt(L,id,B).forEach(function(b){tot+=b.min*60000;it.push({t:'b',b:b})});it.push({t:'i',id:id})}
   tail('');
   L.songs.forEach(function(s){var u=adopted(s,n),v=u?ms(u,n):0;if(u){tot+=v;if(!first||u.at<first)first=u.at}it.push({t:'s',s:s,v:v});tail(s.id)});
   return{it:it,tot:tot,first:first}}
 function sumRender(){var L=cur(),n=Date.now(),b=$('rb'),h;
+  if(SM.mode==='cfm'){var d0=bdesc(L,null),d1=bdesc(L,SM.draft),t0=sumData(L,n).tot,t1=sumData(L,n,SM.draft).tot,rw='';
+    for(var i=0;i<Math.max(d0.length,d1.length,1);i++){var x=d0[i]||'—',y=d1[i]||'—';rw+='<tr><td>'+esc(x)+'</td><td class="'+(x!==y?'df':'')+'">'+esc(y)+'</td></tr>'}
+    rw+='<tr><td>合計　'+fmt(t0)+'</td><td class="'+(t0!==t1?'df':'')+'">合計　'+fmt(t1)+'</td></tr>';
+    b.style.fontSize='';b.innerHTML='<h2>休憩の変更を保存しますか？</h2><div class="d">変更前と変更後の比較（色付きが変更箇所）</div><table class="cmp"><tr><th>変更前</th><th>変更後</th></tr>'+rw+'</table>';
+    $('rbtn').innerHTML='<button data-r="cs">保存して戻る</button><button class="o" data-r="cd">破棄して戻る</button><button class="o" data-r="cc">キャンセル</button>';return}
   if(SM.mode==='log'){var s=L.songs.filter(function(x){return x.id===SM.sid})[0],u=adopted(s,n);
     var ls=s.takes.filter(function(t){return ms(t,n)>0}).map(function(t){return'<button class="o lg" data-r="use" data-t="'+t.id+'">'+(u&&u.id===t.id?'✓ ':'')+dt(t.at)+'　'+fmt(ms(t,n),1)+'</button>'}).join('');
     b.style.fontSize='';b.innerHTML='<h2>'+esc(s.name)+'</h2><div class="d">集計に使う記録を選んでください</div>'+(ls||'<p>記録がありません</p>');
     $('rbtn').innerHTML='<button class="o" data-r="back">戻る</button>';return}
-  var d=sumData(L,n),rows=d.it.filter(function(x){return x.t!=='i'}).length+3;
+  var d=sumData(L,n,SM.edit?SM.draft:null),rows=d.it.filter(function(x){return x.t!=='i'}).length+3;
   b.style.fontSize=SM.edit?'15px':Math.max(12,Math.min(24,Math.floor((innerHeight-190)/(rows*1.9))))+'px';
-  b.innerHTML='<h2>'+esc(L.name)+'</h2><div class="d">'+(d.first?dt(d.first).split(' ')[0]:'')+'</div>'+d.it.map(function(x){
+  b.innerHTML='<h2>'+esc(L.name)+'</h2><div class="d">'+(d.first?dt(d.first).split(' ')[0]:'')+'</div>'+(SM.edit?'<div class="d" style="color:#c26a00;font-weight:600">休憩を編集中（「休憩を確定」を押すまで保存されません）</div>':'')+d.it.map(function(x){
     if(x.t==='s')return'<div class="rr" data-r="log" data-s="'+x.s.id+'"><span>'+esc(x.s.name)+' ›</span><span>'+(x.v?fmt(x.v):'—')+'</span></div>';
-    if(x.t==='b'){var e=SM.edit,id=x.b.id;return'<div class="rr br"><span>休憩</span><span>'+(e?'<button class="o" data-r="bm" data-b="'+id+'">−</button> ':'')+x.b.min+'分'+(e?' <button class="o" data-r="bp" data-b="'+id+'">＋</button> <button class="o" data-r="bd" data-b="'+id+'">✕</button>':'')+'</span></div>'}
+    if(x.t==='b'){var e=SM.edit,id=x.b.id;return'<div class="rr br"><span>休憩</span><span>'+(e?'<button class="o" data-r="bm" data-b="'+id+'">−</button> ':'')+(e?'<input class="bi" type="number" inputmode="numeric" min="1" max="999" value="'+x.b.min+'" data-b="'+id+'">':x.b.min)+'分'+(e?' <button class="o" data-r="bp" data-b="'+id+'">＋</button> <button class="o" data-r="bd" data-b="'+id+'">✕</button>':'')+'</span></div>'}
     return SM.edit?'<div class="ins"><button class="o" data-r="ab" data-a="'+x.id+'">＋ 休憩をここに追加</button></div>':''}).join('')+
-    '<div class="rr tot"><span>合計</span><span>'+fmt(d.tot)+'</span></div>';
-  $('rbtn').innerHTML='<button class="o" data-r="ed">'+(SM.edit?'休憩を確定':'休憩を編集')+'</button><button data-r="cp">テキストをコピー</button><button class="o" data-r="cl">戻る</button>'}
+    '<div class="rr tot"><span>合計</span><span id="tot">'+fmt(d.tot)+'</span></div>';
+  $('rbtn').innerHTML=SM.edit?'<button class="blink" data-r="ed">休憩を確定</button><button class="o" data-r="cl">戻る</button>':'<button class="o" data-r="ed">休憩を編集</button><button data-r="cp">テキストをコピー</button><button class="o" data-r="cl">戻る</button>'}
 $('sumbtn').onclick=function(){SM={mode:'sum',edit:false,sid:''};$('rs').style.display='flex';sumRender()};
-$('rs').addEventListener('click',function(e){var b=e.target.closest('[data-r]');if(!b)return;var r=b.dataset.r,L=cur(),k=L.brk.filter(function(x){return x.id===b.dataset.b})[0];
+$('rs').addEventListener('click',function(e){var b=e.target.closest('[data-r]');if(!b)return;var r=b.dataset.r,L=cur(),B=SM.edit?SM.draft:L.brk,k=B.filter(function(x){return x.id===b.dataset.b})[0];
   if(r==='log'){SM.mode='log';SM.sid=b.dataset.s}
   else if(r==='use'){L.songs.filter(function(x){return x.id===SM.sid})[0].use=b.dataset.t;SM.mode='sum'}
   else if(r==='back')SM.mode='sum';
-  else if(r==='ed')SM.edit=!SM.edit;
-  else if(r==='cl'){$('rs').style.display='none';render();return}
+  else if(r==='ed'){if(SM.edit){L.brk=SM.draft;SM.edit=false;SM.draft=null}else{SM.edit=true;SM.draft=JSON.parse(JSON.stringify(L.brk))}}
+  else if(r==='cl'){if(SM.edit&&!same(SM.draft,L.brk))SM.mode='cfm';else{SM.edit=false;SM.draft=null;$('rs').style.display='none';render();return}}
+  else if(r==='cs'||r==='cd'){if(r==='cs')L.brk=SM.draft;SM.edit=false;SM.draft=null;$('rs').style.display='none';save();render();return}
+  else if(r==='cc')SM.mode='sum';
   else if(r==='cp'){var d=sumData(L,Date.now()),t=L.name+(d.first?'('+dt(d.first).split(' ')[0]+')':'')+'\n'+d.it.filter(function(x){return x.t!=='i'}).map(function(x){return x.t==='s'?x.s.name+'　'+(x.v?fmt(x.v):'—'):'休憩　'+x.b.min+'分'}).join('\n')+'\n合計　'+fmt(d.tot);
     function fb(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(x){}document.body.removeChild(a)}
     if(navigator.clipboard)navigator.clipboard.writeText(t).catch(fb);else fb();b.textContent='コピーしました';setTimeout(function(){b.textContent='テキストをコピー'},1500);return}
-  else if(r==='ab')L.brk.push({id:uid(),after:b.dataset.a,min:5});
+  else if(r==='ab')B.push({id:uid(),after:b.dataset.a,min:5});
   else if(r==='bm')k.min=Math.max(1,k.min-1);
   else if(r==='bp')k.min++;
-  else if(r==='bd')L.brk=L.brk.filter(function(x){return x!==k});
+  else if(r==='bd')SM.draft=B.filter(function(x){return x!==k});
   save();sumRender()});
+$('rs').addEventListener('change',function(e){var i=e.target.closest('.bi');if(!i)return;var k=SM.draft.filter(function(x){return x.id===i.dataset.b})[0],v=parseInt(i.value,10);
+  if(k&&v>0&&v<1000)k.min=v;else if(k)i.value=k.min;$('tot').textContent=fmt(sumData(cur(),Date.now(),SM.draft).tot)});
 render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 </script></body></html>

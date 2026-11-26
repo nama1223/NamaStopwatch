@@ -12,6 +12,9 @@ button:disabled{opacity:.35}button.armed{background:#d9534f;color:#fff;border-co
 #hd{display:flex;align-items:center;justify-content:space-between;background:#1e3a5f;color:#fff;padding:10px 14px}
 #hd h1{font-size:17px;margin:0}.nm{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","MS PMincho",serif;font-weight:600}
 .emb #hd h1{display:none}.emb #hd{justify-content:flex-end;padding:6px 10px}
+#langsw{display:inline-flex;border:1px solid #c9d1da;border-radius:999px;overflow:hidden}
+#langsw button{background:#fff;color:#34506f;border-radius:0;padding:6px 10px;font-size:12px}
+#langsw button.on{background:#1e3a5f;color:#fff}
 main{max-width:480px;margin:0 auto;padding:12px}
 .row{display:flex;gap:6px;margin-bottom:10px}
 select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1da;font:inherit;background:#fff}
@@ -41,11 +44,11 @@ select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1
 .cmp{width:100%;border-collapse:collapse;font-size:14px}.cmp td,.cmp th{border:1px solid #e3e8ee;padding:6px 8px;text-align:left}.cmp .df{background:#fff3cd}
 #rbtn{display:flex;gap:8px;padding-top:10px}#rbtn button{flex:1;padding:10px 4px}
 </style></head><body>
-<div id="hd"><h1>NamaStopwatch <span class="nm">なます</span></h1><button class="o" id="sumbtn">集計</button></div>
+<div id="hd"><h1>NamaStopwatch <span class="nm">なます</span></h1><span style="display:flex;gap:6px;align-items:center"><span id="langsw"><button type="button" id="lg-ja">JP</button><button type="button" id="lg-en">EN</button></span><button class="o" id="sumbtn">集計</button></span></div>
 <main>
  <div class="lp">
  <div class="row"><select id="sel"></select><button class="o" data-g="nl">＋</button><button class="o" data-g="mg">⋯</button></div>
- <div id="mgw" style="display:none"><p class="mgn">曲リストの名前変更、複製、並べ替え、削除メニュー<br>※複製はストップウォッチが初期化されます</p>
+ <div id="mgw" style="display:none"><p class="mgn" id="mgn">曲リストの名前変更、複製、並べ替え、削除メニュー<br>※複製はストップウォッチが初期化されます</p>
  <div class="row" id="mgb"><button class="o" data-g="rl">✏️ 名前</button><button class="o" data-g="cl">📋 複製</button><button class="o" data-g="ul">▲</button><button class="o" data-g="dn">▼</button><button class="o" data-g="dl" id="dl">🗑</button></div></div>
  <div id="ed"><input id="edi" maxlength="40"><button id="edok">OK</button><button class="o" id="edx">×</button></div>
  </div>
@@ -56,7 +59,16 @@ select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1
  <label class="wk"><input type="checkbox" id="wkcb"><span id="wkt"></span></label></div>
 <div id="rs"><div id="rb"></div><div id="rbtn"></div></div>
 <script>
-var APP_BUILD='20261004-5',KEY='namastopwatch_v1';
+var APP_BUILD='20261126-1',KEY='namastopwatch_v1';
+var LANG_KEY='namastopwatch_lang';
+var LANG=(function(){try{var s=localStorage.getItem(LANG_KEY);if(s==='en'||s==='ja')return s;var q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='ja')return q;return (navigator.language||'ja').toLowerCase().indexOf('en')===0?'en':'ja'}catch(e){return 'ja'}})();
+var STRINGS={
+ja:{sum:'集計',select_list:'曲リストを選択',empty_no_list:'上の「曲リストを選択」から選ぶか、＋で新しい曲リストを作ってください',empty_no_song:'「＋ 曲を追加」で曲目を登録してください',mgmt_note:'曲リストの名前変更、複製、並べ替え、削除メニュー<br>※複製はストップウォッチが初期化されます',rename:'✏️ 名前',duplicate:'📋 複製',delete_q:'削除?',add_song:'＋ 曲を追加',add_take:'＋ 計測を追加',untitled:'無題',copy_suffix:'のコピー',wake:'画面をスリープさせない',wake_ng:'この環境では使えません',back:'← 戻る',tap_start:'画面のどこでもタップで開始',tap_stop:'画面のどこでもタップで停止',done_locked:'計測完了（ロック済み）',brk_after:'{name} の後',brk_first:'先頭',brk_min:'　{min}分',sum_break:'休憩',sum_total:'合計',min_unit:'分',add_break_here:'＋ 休憩をここに追加',editing_note:'休憩を編集中（「休憩を確定」を押すまで保存されません）',save_breaks:'休憩を確定',edit_breaks:'休憩を編集',copy_text:'テキストをコピー',copied:'コピーしました',back_btn:'戻る',cfm_title:'休憩の変更を保存しますか？',cfm_desc:'変更前と変更後の比較（色付きが変更箇所）',cfm_before:'変更前',cfm_after:'変更後',cfm_save:'保存して戻る',cfm_discard:'破棄して戻る',cancel:'キャンセル',log_desc:'集計に使う記録を選んでください',log_none:'記録がありません',total_line:'合計　{v}',cp_break:'休憩　{min}分',cp_sep:'　'},
+en:{sum:'Summary',select_list:'Select a song list',empty_no_list:'Pick a song list above, or tap + to create a new one',empty_no_song:'Use "+ Add Song" to register songs',mgmt_note:'Rename, duplicate, reorder, or delete the song list<br>* Duplicating resets the stopwatch times',rename:'✏️ Rename',duplicate:'📋 Copy',delete_q:'Delete?',add_song:'+ Add Song',add_take:'+ Add Timing',untitled:'Untitled',copy_suffix:' copy',wake:'Keep the screen awake',wake_ng:'Not available in this environment',back:'← Back',tap_start:'Tap anywhere to start',tap_stop:'Tap anywhere to stop',done_locked:'Done (locked)',brk_after:'After {name}',brk_first:'Start',brk_min:' — {min} min',sum_break:'Break',sum_total:'Total',min_unit:' min',add_break_here:'+ Add break here',editing_note:'Editing breaks (not saved until you tap "Save Breaks")',save_breaks:'Save Breaks',edit_breaks:'Edit Breaks',copy_text:'Copy Text',copied:'Copied!',back_btn:'Back',cfm_title:'Save the break changes?',cfm_desc:'Before / after comparison (highlighted = changed)',cfm_before:'Before',cfm_after:'After',cfm_save:'Save & Back',cfm_discard:'Discard & Back',cancel:'Cancel',log_desc:'Choose which timing to use for the summary',log_none:'No timings yet',total_line:'Total {v}',cp_break:'Break {min} min',cp_sep:' '}};
+function tr(k){return (STRINGS[LANG]&&STRINGS[LANG][k])||STRINGS.ja[k]||k}
+function trf(k,p){var s=tr(k);for(var x in p)s=s.split('{'+x+'}').join(p[x]);return s}
+function applyLang(){document.documentElement.lang=LANG;$('sumbtn').textContent=tr('sum');$('mgn').innerHTML=tr('mgmt_note');document.querySelector('[data-g=rl]').textContent=tr('rename');document.querySelector('[data-g=cl]').textContent=tr('duplicate');document.querySelector('[data-g=ns]').textContent=tr('add_song');$('mback').textContent=tr('back');$('lg-ja').classList.toggle('on',LANG==='ja');$('lg-en').classList.toggle('on',LANG==='en')}
+function setLang(l){if(l!=='en'&&l!=='ja')return;LANG=l;try{localStorage.setItem(LANG_KEY,l)}catch(e){}applyLang();render();if($('rs').style.display==='flex')sumRender();if(M)mshow();wkUi()}
 if(/embedded=1/.test(location.search))document.body.classList.add('emb');
 function uid(){return Math.random().toString(36).slice(2,9)}
 function mkList(n){return{id:uid(),name:n,songs:[],brk:[]}}
@@ -73,25 +85,25 @@ function locked(t){return t.acc>0&&!t.run&&!t.u}
 var $=function(i){return document.getElementById(i)},armed='',M=null,lastTog=0,SM={mode:'sum',edit:false,sid:''};
 function render(){
   var L=cur(),now=Date.now(),k='l'+(L&&L.id);
-  $('sel').innerHTML='<option value=""'+(L?'':' selected')+'>曲リストを選択</option>'+S.lists.map(function(l){return'<option value="'+l.id+'"'+(L&&l.id===L.id?' selected':'')+'>'+esc(l.name)+'</option>'}).join('');
+  $('sel').innerHTML='<option value=""'+(L?'':' selected')+'>'+tr('select_list')+'</option>'+S.lists.map(function(l){return'<option value="'+l.id+'"'+(L&&l.id===L.id?' selected':'')+'>'+esc(l.name)+'</option>'}).join('');
   [].forEach.call(document.querySelectorAll('[data-g=rl],[data-g=cl],[data-g=ul],[data-g=dn],[data-g=dl],[data-g=ns]'),function(b){b.disabled=!L});
-  $('dl').textContent=armed===k?'削除?':'🗑';$('dl').classList.toggle('armed',armed===k);
+  $('dl').textContent=armed===k?tr('delete_q'):'🗑';$('dl').classList.toggle('armed',armed===k);
   $('sumbtn').disabled=!L;
-  $('songs').innerHTML=!L?'<p style="color:#8a96a3;text-align:center">上の「曲リストを選択」から選ぶか、＋で新しい曲リストを作ってください</p>':L.songs.length?L.songs.map(function(s){var sk='s'+s.id;
-    return'<div class="song"><div class="sh"><b>'+esc(s.name)+'</b><button data-a="su" data-s="'+s.id+'">▲</button><button data-a="sd" data-s="'+s.id+'">▼</button><button class="'+(armed===sk?'armed':'')+'" data-a="ds" data-s="'+s.id+'">'+(armed===sk?'削除?':'🗑')+'</button></div>'+
-    s.takes.map(function(t){var tk='t'+t.id;return'<div class="take"><button class="go'+(t.run?' on':locked(t)?' lk':'')+'" data-a="tg" data-s="'+s.id+'" data-t="'+t.id+'">'+(t.run?'■':locked(t)?'🔒':'▶')+'</button><span class="t" data-t="'+t.id+'">'+fmt(ms(t,now),1)+'</span><small>'+dt(t.at)+'</small><button class="x'+(armed===tk?' armed':'')+'" data-a="dt" data-s="'+s.id+'" data-t="'+t.id+'">'+(armed===tk?'削除?':'✕')+'</button></div>'}).join('')+
-    '<button class="o add" data-a="at" data-s="'+s.id+'">＋ 計測を追加</button></div>'}).join(''):'<p style="color:#8a96a3;text-align:center">「＋ 曲を追加」で曲目を登録してください</p>';
+  $('songs').innerHTML=!L?'<p style="color:#8a96a3;text-align:center">'+tr('empty_no_list')+'</p>':L.songs.length?L.songs.map(function(s){var sk='s'+s.id;
+    return'<div class="song"><div class="sh"><b>'+esc(s.name)+'</b><button data-a="su" data-s="'+s.id+'">▲</button><button data-a="sd" data-s="'+s.id+'">▼</button><button class="'+(armed===sk?'armed':'')+'" data-a="ds" data-s="'+s.id+'">'+(armed===sk?tr('delete_q'):'🗑')+'</button></div>'+
+    s.takes.map(function(t){var tk='t'+t.id;return'<div class="take"><button class="go'+(t.run?' on':locked(t)?' lk':'')+'" data-a="tg" data-s="'+s.id+'" data-t="'+t.id+'">'+(t.run?'■':locked(t)?'🔒':'▶')+'</button><span class="t" data-t="'+t.id+'">'+fmt(ms(t,now),1)+'</span><small>'+dt(t.at)+'</small><button class="x'+(armed===tk?' armed':'')+'" data-a="dt" data-s="'+s.id+'" data-t="'+t.id+'">'+(armed===tk?tr('delete_q'):'✕')+'</button></div>'}).join('')+
+    '<button class="o add" data-a="at" data-s="'+s.id+'">'+tr('add_take')+'</button></div>'}).join(''):'<p style="color:#8a96a3;text-align:center">'+tr('empty_no_song')+'</p>';
   save();
 }
 var WL=null,wlNg=false;
-function wkUi(){$('wkt').innerHTML=wlNg?'<s>画面をスリープさせない</s><br>この環境では使えません':'画面をスリープさせない';$('wkcb').disabled=wlNg;$('wkcb').checked=!wlNg&&S.wake!==false}
+function wkUi(){$('wkt').innerHTML=wlNg?'<s>'+tr('wake')+'</s><br>'+tr('wake_ng'):tr('wake');$('wkcb').disabled=wlNg;$('wkcb').checked=!wlNg&&S.wake!==false}
 function wlOn(){wlNg=false;if(!navigator.wakeLock){wlNg=true;wkUi();return}navigator.wakeLock.request('screen').then(function(l){WL=l;l.addEventListener('release',function(){WL=null})}).catch(function(){wlNg=true;wkUi()})}
 $('wkcb').onchange=function(){S.wake=this.checked;save();if(this.checked)wlOn();else wlOff()};
 function wlOff(){if(WL){WL.release().catch(function(){});WL=null}}
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&M&&!WL&&S.wake!==false)wlOn()});
 function mfind(){var s=cur().songs.filter(function(x){return x.id===M.s})[0];return{s:s,t:s.takes.filter(function(x){return x.id===M.t})[0]}}
 function mshow(){var o=mfind(),t=o.t,st=t.run?'run':locked(t)?'done':'ready';$('ms').className=st;$('mn').textContent=o.s.name;$('mt').textContent=fmt(ms(t,Date.now()),1);
-  $('mh').textContent=st==='run'?'画面のどこでもタップで停止':st==='done'?'計測完了（ロック済み）':'画面のどこでもタップで開始'}
+  $('mh').textContent=st==='run'?tr('tap_stop'):st==='done'?tr('done_locked'):tr('tap_start')}
 setInterval(function(){var L=cur();if(!L)return;var n=Date.now(),rl=false;if(M)mshow();L.songs.forEach(function(s){s.takes.forEach(function(t){
   if(t.u&&!t.run&&!(M&&M.t===t.id)&&n-(t.uAt||0)>5000){t.u=false;rl=true}   /* 解除してから5秒放置で自動的に再ロック */
   if(t.run){var e=document.querySelector('.t[data-t="'+t.id+'"]');if(e)e.textContent=fmt(ms(t,n),1)}})});if(rl){save();render()}},100);
@@ -105,15 +117,15 @@ $('sel').onchange=function(){S.cur=this.value;render()};
 document.addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b||b.closest('#rs,#ms'))return;var L=cur(),a=b.dataset.a,g=b.dataset.g;
   if(g==='mg'){var m=$('mgw');m.style.display=m.style.display==='none'?'block':'none';return}
-  if(g==='nl'){ask('',function(v){var l=mkList(v||'無題');S.lists.push(l);S.cur=l.id;render()});return}
+  if(g==='nl'){ask('',function(v){var l=mkList(v||tr('untitled'));S.lists.push(l);S.cur=l.id;render()});return}
   if(!L)return;
   var s=L.songs.filter(function(x){return x.id===b.dataset.s})[0];
   if(g==='rl')ask(L.name,function(v){L.name=v||L.name;render()});
-  else if(g==='cl'){var c=mkList(L.name+'のコピー'),m2={};L.songs.forEach(function(x){var id=uid();m2[x.id]=id;c.songs.push({id:id,name:x.name,takes:[mkTake()]})});
+  else if(g==='cl'){var c=mkList(L.name+tr('copy_suffix')),m2={};L.songs.forEach(function(x){var id=uid();m2[x.id]=id;c.songs.push({id:id,name:x.name,takes:[mkTake()]})});
     c.brk=L.brk.map(function(x){return{id:uid(),after:m2[x.after]||'',min:x.min}});S.lists.push(c);S.cur=c.id;render()}
   else if(g==='ul'||g==='dn'){mv(S.lists,L,g==='ul'?-1:1);render()}
   else if(g==='dl')confirmDel('l'+L.id,function(){S.lists=S.lists.filter(function(l){return l!==L});S.cur=''});
-  else if(g==='ns')ask('',function(v){L.songs.push({id:uid(),name:v||'無題',takes:[mkTake()]});render()});
+  else if(g==='ns')ask('',function(v){L.songs.push({id:uid(),name:v||tr('untitled'),takes:[mkTake()]});render()});
   else if(a==='su'||a==='sd'){mv(L.songs,s,a==='su'?-1:1);render()}
   else if(a==='at'){s.takes.push(mkTake());render()}
   else if(a==='tg'){var t=s.takes.filter(function(x){return x.id===b.dataset.t})[0];
@@ -125,7 +137,7 @@ document.addEventListener('click',function(e){
 });
 function adopted(s,n){var ts=s.takes.filter(function(t){return ms(t,n)>0});return ts.length?(ts.filter(function(t){return t.id===s.use})[0]||ts[ts.length-1]):null}
 function same(a,b){var f=function(x){return JSON.stringify(x.map(function(y){return[y.after,y.min]}))};return f(a)===f(b)}
-function bdesc(L,B){var o=[];[''].concat(L.songs.map(function(s){return s.id})).forEach(function(id){brkAt(L,id,B).forEach(function(b){var s=L.songs.filter(function(x){return x.id===id})[0];o.push((s?s.name+' の後':'先頭')+'　'+b.min+'分')})});return o}
+function bdesc(L,B){var o=[];[''].concat(L.songs.map(function(s){return s.id})).forEach(function(id){brkAt(L,id,B).forEach(function(b){var s=L.songs.filter(function(x){return x.id===id})[0];o.push((s?trf('brk_after',{name:s.name}):tr('brk_first'))+trf('brk_min',{min:b.min}))})});return o}
 function brkAt(L,id,B){return (B||L.brk).filter(function(b){var ok=L.songs.some(function(s){return s.id===b.after});return(ok?b.after:'')===id})}
 function sumData(L,n,B){var it=[],tot=0,first=0;
   function tail(id){brkAt(L,id,B).forEach(function(b){tot+=b.min*60000;it.push({t:'b',b:b})});it.push({t:'i',id:id})}
@@ -135,21 +147,21 @@ function sumData(L,n,B){var it=[],tot=0,first=0;
 function sumRender(){var L=cur(),n=Date.now(),b=$('rb'),h;
   if(SM.mode==='cfm'){var d0=bdesc(L,null),d1=bdesc(L,SM.draft),t0=sumData(L,n).tot,t1=sumData(L,n,SM.draft).tot,rw='';
     for(var i=0;i<Math.max(d0.length,d1.length,1);i++){var x=d0[i]||'—',y=d1[i]||'—';rw+='<tr><td>'+esc(x)+'</td><td class="'+(x!==y?'df':'')+'">'+esc(y)+'</td></tr>'}
-    rw+='<tr><td>合計　'+fmt(t0)+'</td><td class="'+(t0!==t1?'df':'')+'">合計　'+fmt(t1)+'</td></tr>';
-    b.style.fontSize='';b.innerHTML='<h2>休憩の変更を保存しますか？</h2><div class="d">変更前と変更後の比較（色付きが変更箇所）</div><table class="cmp"><tr><th>変更前</th><th>変更後</th></tr>'+rw+'</table>';
-    $('rbtn').innerHTML='<button data-r="cs">保存して戻る</button><button class="o" data-r="cd">破棄して戻る</button><button class="o" data-r="cc">キャンセル</button>';return}
+    rw+='<tr><td>'+trf('total_line',{v:fmt(t0)})+'</td><td class="'+(t0!==t1?'df':'')+'">'+trf('total_line',{v:fmt(t1)})+'</td></tr>';
+    b.style.fontSize='';b.innerHTML='<h2>'+tr('cfm_title')+'</h2><div class="d">'+tr('cfm_desc')+'</div><table class="cmp"><tr><th>'+tr('cfm_before')+'</th><th>'+tr('cfm_after')+'</th></tr>'+rw+'</table>';
+    $('rbtn').innerHTML='<button data-r="cs">'+tr('cfm_save')+'</button><button class="o" data-r="cd">'+tr('cfm_discard')+'</button><button class="o" data-r="cc">'+tr('cancel')+'</button>';return}
   if(SM.mode==='log'){var s=L.songs.filter(function(x){return x.id===SM.sid})[0],u=adopted(s,n);
     var ls=s.takes.filter(function(t){return ms(t,n)>0}).map(function(t){return'<button class="o lg" data-r="use" data-t="'+t.id+'">'+(u&&u.id===t.id?'✓ ':'')+dt(t.at)+'　'+fmt(ms(t,n),1)+'</button>'}).join('');
-    b.style.fontSize='';b.innerHTML='<h2>'+esc(s.name)+'</h2><div class="d">集計に使う記録を選んでください</div>'+(ls||'<p>記録がありません</p>');
-    $('rbtn').innerHTML='<button class="o" data-r="back">戻る</button>';return}
+    b.style.fontSize='';b.innerHTML='<h2>'+esc(s.name)+'</h2><div class="d">'+tr('log_desc')+'</div>'+(ls||'<p>'+tr('log_none')+'</p>');
+    $('rbtn').innerHTML='<button class="o" data-r="back">'+tr('back_btn')+'</button>';return}
   var d=sumData(L,n,SM.edit?SM.draft:null),rows=d.it.filter(function(x){return x.t!=='i'}).length+3;
   b.style.fontSize=SM.edit?'15px':Math.max(12,Math.min(24,Math.floor((innerHeight-190)/(rows*1.9))))+'px';
-  b.innerHTML='<h2>'+esc(L.name)+'</h2><div class="d">'+(d.first?dt(d.first).split(' ')[0]:'')+'</div>'+(SM.edit?'<div class="d" style="color:#c26a00;font-weight:600">休憩を編集中（「休憩を確定」を押すまで保存されません）</div>':'')+d.it.map(function(x){
+  b.innerHTML='<h2>'+esc(L.name)+'</h2><div class="d">'+(d.first?dt(d.first).split(' ')[0]:'')+'</div>'+(SM.edit?'<div class="d" style="color:#c26a00;font-weight:600">'+tr('editing_note')+'</div>':'')+d.it.map(function(x){
     if(x.t==='s')return'<div class="rr" data-r="log" data-s="'+x.s.id+'"><span>'+esc(x.s.name)+' ›</span><span>'+(x.v?fmt(x.v):'—')+'</span></div>';
-    if(x.t==='b'){var e=SM.edit,id=x.b.id;return'<div class="rr br"><span>休憩</span><span>'+(e?'<button class="o" data-r="bm" data-b="'+id+'">−</button> ':'')+(e?'<input class="bi" type="number" inputmode="numeric" min="1" max="999" value="'+x.b.min+'" data-b="'+id+'">':x.b.min)+'分'+(e?' <button class="o" data-r="bp" data-b="'+id+'">＋</button> <button class="o" data-r="bd" data-b="'+id+'">✕</button>':'')+'</span></div>'}
-    return SM.edit?'<div class="ins"><button class="o" data-r="ab" data-a="'+x.id+'">＋ 休憩をここに追加</button></div>':''}).join('')+
-    '<div class="rr tot"><span>合計</span><span id="tot">'+fmt(d.tot)+'</span></div>';
-  $('rbtn').innerHTML=SM.edit?'<button class="blink" data-r="ed">休憩を確定</button><button class="o" data-r="cl">戻る</button>':'<button class="o" data-r="ed">休憩を編集</button><button data-r="cp">テキストをコピー</button><button class="o" data-r="cl">戻る</button>'}
+    if(x.t==='b'){var e=SM.edit,id=x.b.id;return'<div class="rr br"><span>'+tr('sum_break')+'</span><span>'+(e?'<button class="o" data-r="bm" data-b="'+id+'">−</button> ':'')+(e?'<input class="bi" type="number" inputmode="numeric" min="1" max="999" value="'+x.b.min+'" data-b="'+id+'">':x.b.min)+tr('min_unit')+(e?' <button class="o" data-r="bp" data-b="'+id+'">＋</button> <button class="o" data-r="bd" data-b="'+id+'">✕</button>':'')+'</span></div>'}
+    return SM.edit?'<div class="ins"><button class="o" data-r="ab" data-a="'+x.id+'">'+tr('add_break_here')+'</button></div>':''}).join('')+
+    '<div class="rr tot"><span>'+tr('sum_total')+'</span><span id="tot">'+fmt(d.tot)+'</span></div>';
+  $('rbtn').innerHTML=SM.edit?'<button class="blink" data-r="ed">'+tr('save_breaks')+'</button><button class="o" data-r="cl">'+tr('back_btn')+'</button>':'<button class="o" data-r="ed">'+tr('edit_breaks')+'</button><button data-r="cp">'+tr('copy_text')+'</button><button class="o" data-r="cl">'+tr('back_btn')+'</button>'}
 $('sumbtn').onclick=function(){SM={mode:'sum',edit:false,sid:''};$('rs').style.display='flex';sumRender()};
 $('rs').addEventListener('click',function(e){var b=e.target.closest('[data-r]');if(!b)return;var r=b.dataset.r,L=cur(),B=SM.edit?SM.draft:L.brk,k=B.filter(function(x){return x.id===b.dataset.b})[0];
   if(r==='log'){SM.mode='log';SM.sid=b.dataset.s}
@@ -159,9 +171,9 @@ $('rs').addEventListener('click',function(e){var b=e.target.closest('[data-r]');
   else if(r==='cl'){if(SM.edit&&!same(SM.draft,L.brk))SM.mode='cfm';else{SM.edit=false;SM.draft=null;$('rs').style.display='none';render();return}}
   else if(r==='cs'||r==='cd'){if(r==='cs')L.brk=SM.draft;SM.edit=false;SM.draft=null;$('rs').style.display='none';save();render();return}
   else if(r==='cc')SM.mode='sum';
-  else if(r==='cp'){var d=sumData(L,Date.now()),t=L.name+(d.first?'('+dt(d.first).split(' ')[0]+')':'')+'\n'+d.it.filter(function(x){return x.t!=='i'}).map(function(x){return x.t==='s'?x.s.name+'　'+(x.v?fmt(x.v):'—'):'休憩　'+x.b.min+'分'}).join('\n')+'\n合計　'+fmt(d.tot);
+  else if(r==='cp'){var d=sumData(L,Date.now()),t=L.name+(d.first?'('+dt(d.first).split(' ')[0]+')':'')+'\n'+d.it.filter(function(x){return x.t!=='i'}).map(function(x){return x.t==='s'?x.s.name+tr('cp_sep')+(x.v?fmt(x.v):'—'):trf('cp_break',{min:x.b.min})}).join('\n')+'\n'+trf('total_line',{v:fmt(d.tot)});
     function fb(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(x){}document.body.removeChild(a)}
-    if(navigator.clipboard)navigator.clipboard.writeText(t).catch(fb);else fb();b.textContent='コピーしました';setTimeout(function(){b.textContent='テキストをコピー'},1500);return}
+    if(navigator.clipboard)navigator.clipboard.writeText(t).catch(fb);else fb();b.textContent=tr('copied');setTimeout(function(){b.textContent=tr('copy_text')},1500);return}
   else if(r==='ab')B.push({id:uid(),after:b.dataset.a,min:5});
   else if(r==='bm')k.min=Math.max(1,k.min-1);
   else if(r==='bp')k.min++;
@@ -169,6 +181,9 @@ $('rs').addEventListener('click',function(e){var b=e.target.closest('[data-r]');
   save();sumRender()});
 $('rs').addEventListener('change',function(e){var i=e.target.closest('.bi');if(!i)return;var k=SM.draft.filter(function(x){return x.id===i.dataset.b})[0],v=parseInt(i.value,10);
   if(k&&v>0&&v<1000)k.min=v;else if(k)i.value=k.min;$('tot').textContent=fmt(sumData(cur(),Date.now(),SM.draft).tot)});
+$('lg-ja').onclick=function(){setLang('ja')};
+$('lg-en').onclick=function(){setLang('en')};
+applyLang();
 render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js');
 </script></body></html>

@@ -15,6 +15,7 @@ button:disabled{opacity:.35}button.armed{background:#d9534f;color:#fff;border-co
 #langsw{display:inline-flex;border:1px solid #c9d1da;border-radius:999px;overflow:hidden}
 #langsw button{background:#fff;color:#34506f;border-radius:0;padding:6px 10px;font-size:12px}
 #langsw button.on{background:#1e3a5f;color:#fff}
+.emb #langsw{display:none}
 main{max-width:480px;margin:0 auto;padding:12px}
 .row{display:flex;gap:6px;margin-bottom:10px}
 select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1da;font:inherit;background:#fff}
@@ -59,7 +60,7 @@ select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1
  <label class="wk"><input type="checkbox" id="wkcb"><span id="wkt"></span></label></div>
 <div id="rs"><div id="rb"></div><div id="rbtn"></div></div>
 <script>
-var APP_BUILD='20261126-1',KEY='namastopwatch_v1';
+var APP_BUILD='20261126-2',KEY='namastopwatch_v1';
 var LANG_KEY='namastopwatch_lang';
 var LANG=(function(){try{var s=localStorage.getItem(LANG_KEY);if(s==='en'||s==='ja')return s;var q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='ja')return q;return (navigator.language||'ja').toLowerCase().indexOf('en')===0?'en':'ja'}catch(e){return 'ja'}})();
 var STRINGS={

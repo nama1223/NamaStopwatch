@@ -60,7 +60,7 @@ select{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid #c9d1
  <label class="wk"><input type="checkbox" id="wkcb"><span id="wkt"></span></label></div>
 <div id="rs"><div id="rb"></div><div id="rbtn"></div></div>
 <script>
-var APP_BUILD='20261126-3',KEY='namastopwatch_v1';
+var APP_BUILD='20261128-1',KEY='namastopwatch_v1';
 var LANG_KEY='namastopwatch_lang';
 var LANG=(function(){try{var q=new URLSearchParams(location.search),ql=q.get('lang');if(q.get('embedded')==='1'&&(ql==='en'||ql==='ja'))return ql;var s=localStorage.getItem(LANG_KEY);if(s==='en'||s==='ja')return s;if(ql==='en'||ql==='ja')return ql;return (navigator.language||'ja').toLowerCase().indexOf('en')===0?'en':'ja'}catch(e){return 'ja'}})();
 var STRINGS={
@@ -70,6 +70,8 @@ function tr(k){return (STRINGS[LANG]&&STRINGS[LANG][k])||STRINGS.ja[k]||k}
 function trf(k,p){var s=tr(k);for(var x in p)s=s.split('{'+x+'}').join(p[x]);return s}
 function applyLang(){document.documentElement.lang=LANG;$('sumbtn').textContent=tr('sum');$('mgn').innerHTML=tr('mgmt_note');document.querySelector('[data-g=rl]').textContent=tr('rename');document.querySelector('[data-g=cl]').textContent=tr('duplicate');document.querySelector('[data-g=ns]').textContent=tr('add_song');$('mback').textContent=tr('back');$('lg-ja').classList.toggle('on',LANG==='ja');$('lg-en').classList.toggle('on',LANG==='en')}
 function setLang(l){if(l!=='en'&&l!=='ja')return;LANG=l;try{localStorage.setItem(LANG_KEY,l)}catch(e){}applyLang();render();if($('rs').style.display==='flex')sumRender();if(M)mshow();wkUi()}
+function setLangHost(l){if(l!=='en'&&l!=='ja')return;if(l===LANG)return;LANG=l;applyLang();render();if($('rs').style.display==='flex')sumRender();if(M)mshow();wkUi()}
+window.addEventListener('message',function(e){if(e.origin!==location.origin)return;if(!/embedded=1/.test(location.search))return;var d=e.data;if(d&&d.__namaHostLang)setLangHost(d.__namaHostLang)});
 if(/embedded=1/.test(location.search))document.body.classList.add('emb');
 function uid(){return Math.random().toString(36).slice(2,9)}
 function mkList(n){return{id:uid(),name:n,songs:[],brk:[]}}
